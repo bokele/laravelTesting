@@ -16,3 +16,33 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::middleware([
+    'auth:sanctum',
+    config('jetstream.auth_session'),
+    'verified'
+])->group(function () {
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->name('dashboard');
+});
+
+Route::redirect('/', 'login');
+Route::get('download', [ProductController::class, 'download']);
+
+Route::middleware('auth')->group(function () {
+    Route::get('products', [ProductController::class, 'index'])->name('products.index');
+
+    Route::middleware('is_admin')->group(function () {
+        Route::get('products/create', [ProductController::class, 'create'])
+            ->name('products.create');
+        Route::post('products', [ProductController::class, 'store'])
+            ->name('products.store');
+        Route::get('products/{product}/edit', [ProductController::class, 'edit'])
+            ->name('products.edit');
+        Route::put('products/{product}', [ProductController::class, 'update'])
+            ->name('products.update');
+        Route::delete('products/{product}', [ProductController::class, 'destroy'])
+            ->name('products.destroy');
+    });
+});
